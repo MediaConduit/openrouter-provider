@@ -5,9 +5,9 @@
  * Provides access to multiple model providers through OpenRouter.
  */
 
-import { TextToTextModel, TextToTextOptions } from '@mediaconduit/mediaconduit';
-import { ModelMetadata } from '@mediaconduit/mediaconduit';
-import { Text, TextRole } from '@mediaconduit/mediaconduit';
+import { TextToTextModel, TextToTextOptions } from '@mediaconduit/mediaconduit/src/media/models/abstracts/TextToTextModel';
+import { ModelMetadata } from '@mediaconduit/mediaconduit/src/media/models/abstracts/Model';
+import { Text, TextRole } from '@mediaconduit/mediaconduit/src/media/assets/roles';
 import { OpenRouterAPIClient } from './OpenRouterAPIClient';
 import { createGenerationPrompt, extractInputContent } from '@mediaconduit/mediaconduit/src/media/utils/GenerationPromptHelper';
 

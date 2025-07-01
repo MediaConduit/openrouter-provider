@@ -13,10 +13,10 @@ import {
   ProviderConfig, 
   GenerationRequest, 
   GenerationResult 
-} from '@mediaconduit/mediaconduit';
+} from '@mediaconduit/mediaconduit/src/media/types/provider';
 import { OpenRouterAPIClient, OpenRouterConfig } from './OpenRouterAPIClient';
-import { TextToTextProvider } from '@mediaconduit/mediaconduit';
-import { TextToTextModel } from '@mediaconduit/mediaconduit';
+import { TextToTextProvider } from '@mediaconduit/mediaconduit/src/media/capabilities';
+import { TextToTextModel } from '@mediaconduit/mediaconduit/src/media/models/abstracts/TextToTextModel';
 import { OpenRouterTextToTextModel } from './OpenRouterTextToTextModel';
 
 export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
