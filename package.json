@@ -1,0 +1,42 @@
+{
+  "name": "openrouter-provider",
+  "version": "1.0.0",
+  "description": "Dynamic OpenRouter provider for MediaConduit - Access 200+ LLMs through unified API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "tsx test-openrouter-provider.ts",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "mediaconduit",
+    "provider", 
+    "dynamic-provider",
+    "openrouter",
+    "llm",
+    "text-to-text",
+    "unified-api",
+    "zero-config"
+  ],
+  "author": "MediaConduit Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "@mediaconduit/mediaconduit": "^0.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.2",
+    "rimraf": "^5.0.0", 
+    "typescript": "^5.8.3",
+    "tsx": "^4.20.3"
+  },
+  "peerDependencies": {
+    "@mediaconduit/mediaconduit": "^0.1.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MediaConduit/openrouter-provider.git"
+  }
+}

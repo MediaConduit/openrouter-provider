@@ -1,0 +1,12 @@
+id: openrouter-provider
+name: OpenRouter Provider
+description: Dynamic provider for OpenRouter's unified LLM API with access to 200+ models from multiple providers
+version: 1.0.0
+author: MediaConduit Team
+type: remote
+capabilities:
+  - text-to-text
+
+# Build configuration
+main: dist/index.js
+exportName: OpenRouterProvider
