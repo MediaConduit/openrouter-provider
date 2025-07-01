@@ -22,23 +22,20 @@ import { OpenRouterTextToTextModel } from './OpenRouterTextToTextModel';
 export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
   readonly id = 'openrouter';
   readonly name = 'OpenRouter';
-  readonly type = ProviderType.REMOTE;  readonly capabilities = [
-    MediaCapability.TEXT_TO_TEXT,
+  readonly type = ProviderType.REMOTE;
+  readonly capabilities = [
     MediaCapability.TEXT_TO_TEXT
   ];
 
   private config?: ProviderConfig;
   private apiClient?: OpenRouterAPIClient;
   private discoveredModels = new Map<string, ProviderModel>();
-  private configurationPromise: Promise<void> | null = null;
 
 
   get models(): ProviderModel[] {
-    // Return discovered models if available, otherwise return popular models
-
-      return Array.from(this.discoveredModels.values());
-
-
+    // Return discovered models if available, otherwise return empty array
+    // Models will be discovered in background and populated over time
+    return Array.from(this.discoveredModels.values());
   }
 
   async configure(config: ProviderConfig): Promise<void> {
@@ -56,8 +53,10 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
 
     this.apiClient = new OpenRouterAPIClient(openRouterConfig);
 
-    // Optionally discover available models
-    await this.discoverModels();
+    // Start model discovery in background (non-blocking)
+    this.discoverModels().catch(error => {
+      console.warn('[OpenRouterProvider] Model discovery failed:', error instanceof Error ? error.message : String(error));
+    });
   }
 
   async isAvailable(): Promise<boolean> {
@@ -107,17 +106,12 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
       modelId
     });
   }  /**
-   * Get a model instance by ID with automatic type detection
+   * Get a model instance by ID - ready immediately!
    */
   async getModel(modelId: string): Promise<any> {
-    // Ensure we're configured before proceeding
     if (!this.apiClient) {
-      // Wait for auto-configuration to complete if it's in progress
-      await this.ensureConfigured();
+      throw new Error('Provider not configured - set OPENROUTER_API_KEY environment variable or call configure()');
     }
-    
-    // Wait for model discovery to complete before creating model
-    await this.ensureModelsDiscovered();
     
     // For OpenRouter, all models are text-to-text
     return this.createTextToTextModel(modelId);
@@ -127,13 +121,8 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
     return this.models.map(model => model.id);
   }
   supportsTextToTextModel(modelId: string): boolean {
-    // If models haven't been discovered yet, assume the model is supported
-    // This allows the provider to work even before model discovery completes
-    if (this.discoveredModels.size === 0) {
-      return true; // Optimistic assumption for popular models
-    }
-    
-    return this.getSupportedTextToTextModels().includes(modelId);
+    // OpenRouter supports any model ID - optimistic approach
+    return true;
   }
 
   // Service management (no-ops for remote API providers)
@@ -234,70 +223,27 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
     }
     return modelId;
   }  /**
-   * Constructor automatically configures from environment variables
+   * Constructor automatically configures from environment variables - sync and ready!
    */
   constructor() {
-    // Auto-configure from environment variables (store the promise)
-    this.configurationPromise = this.autoConfigureFromEnv().catch(error => {
-      // Silent fail - provider will just not be available until manually configured
-      this.configurationPromise = null;
-    });
-  }
-
-  /**
-   * Automatically configure from environment variables
-   */
-  private async autoConfigureFromEnv(): Promise<void> {
+    // Sync configuration from environment variables
     const apiKey = process.env.OPENROUTER_API_KEY;
     
     if (apiKey) {
-      try {        await this.configure({
-          apiKey,
-          timeout: 300000,
-          retries: 3
-        });
-      } catch (error) {
-        console.warn(`[OpenRouterProvider] Auto-configuration failed: ${error instanceof Error ? error.message : String(error)}`);
-        throw error;
-      }
-    } else {
-      throw new Error('No OPENROUTER_API_KEY found in environment');
-    }
-  }
+      const openRouterConfig: OpenRouterConfig = {
+        apiKey,
+        httpReferer: 'https://MediaConduit.ai',
+        xTitle: 'MediaConduit AI'
+      };
 
-  /**
-   * Ensure the provider is configured (wait for auto-configuration to complete)
-   */
-  private async ensureConfigured(): Promise<void> {
-    if (this.apiClient) {
-      return; // Already configured
+      this.apiClient = new OpenRouterAPIClient(openRouterConfig);
+      this.config = { apiKey };
+      
+      // Start model discovery in background (non-blocking)
+      this.discoverModels().catch(error => {
+        console.warn('[OpenRouterProvider] Background model discovery failed:', error instanceof Error ? error.message : String(error));
+      });
     }
-    
-    // Wait for the configuration promise if it exists
-    if (this.configurationPromise) {
-      await this.configurationPromise;
-    }
-    
-    if (!this.apiClient) {
-      throw new Error('Provider auto-configuration failed - no API key found in environment');
-    }
-  }
-
-  /**
-   * Ensure models have been discovered
-   */
-  private async ensureModelsDiscovered(): Promise<void> {
-    // If models are already discovered, no need to wait
-    if (this.discoveredModels.size > 0) {
-      return;
-    }
-    
-    // If not configured yet, wait for configuration first
-    if (!this.apiClient) {
-      await this.ensureConfigured();
-    }
-    
-    // Now discover models
-    await this.discoverModels();
+    // If no API key, provider will be available but not functional until configured
   }
 }
