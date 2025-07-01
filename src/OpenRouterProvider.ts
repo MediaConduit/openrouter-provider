@@ -222,7 +222,7 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
 
       console.log(`[OpenRouterProvider] Discovered ${this.discoveredModels.size} models`);
     } catch (error) {
-      console.warn('[OpenRouterProvider] Model discovery failed, using popular models fallback:', error.message);
+      console.warn('[OpenRouterProvider] Model discovery failed, using popular models fallback:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -257,7 +257,7 @@ export class OpenRouterProvider implements MediaProvider, TextToTextProvider {
           retries: 3
         });
       } catch (error) {
-        console.warn(`[OpenRouterProvider] Auto-configuration failed: ${error.message}`);
+        console.warn(`[OpenRouterProvider] Auto-configuration failed: ${error instanceof Error ? error.message : String(error)}`);
         throw error;
       }
     } else {
